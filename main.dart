@@ -7,6 +7,7 @@ class TodoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Todo App',
       themeMode: ThemeMode.system,
       theme: ThemeData.light(),
@@ -19,11 +20,13 @@ class TodoApp extends StatelessWidget {
 class Todo {
   final String title;
   final DateTime timeStamp;
+  String note;
   bool isDone;
 
   Todo({
     required this.title,
     required this.timeStamp,
+    this.note = '',
     this.isDone = false,
   });
 }
@@ -85,6 +88,21 @@ class _TodoScreenState extends State<TodoScreen> {
     });
   }
 
+  void editTodoDetails(int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TodoDetailsScreen(todo: todos[index]),
+      ),
+    ).then((updatedTodo) {
+      if (updatedTodo != null) {
+        setState(() {
+          todos[index] = updatedTodo;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,6 +125,9 @@ class _TodoScreenState extends State<TodoScreen> {
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: ListTile(
+                onTap: () {
+                  editTodoDetails(index);
+                },
                 leading: Checkbox(
                   value: todo.isDone,
                   onChanged: (value) {
@@ -138,6 +159,76 @@ class _TodoScreenState extends State<TodoScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: addTodo,
         child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class TodoDetailsScreen extends StatefulWidget {
+  final Todo todo;
+
+  TodoDetailsScreen({required this.todo});
+
+  @override
+  _TodoDetailsScreenState createState() => _TodoDetailsScreenState();
+}
+
+class _TodoDetailsScreenState extends State<TodoDetailsScreen> {
+  late TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _notesController = TextEditingController(text: widget.todo.note);
+  }
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  void saveTodoDetails() {
+    widget.todo.note = _notesController.text;
+    Navigator.pop(context, widget.todo);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Todo Details'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.save),
+            onPressed: saveTodoDetails,
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              widget.todo.title,
+              style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Expanded(
+              child: TextField(
+                controller: _notesController,
+                maxLines: null,
+                decoration: InputDecoration(
+                  hintText: 'Enter notes and points',
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
