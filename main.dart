@@ -114,9 +114,22 @@ class _TodoScreenState extends State<TodoScreen> {
                     toggleTodoDone(index);
                   },
                 ),
-                title: Text(todo.title),
+                title: Text(
+                  todo.title,
+                  style: TextStyle(
+                    decoration: todo.isDone
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                  ),
+                ),
                 subtitle: Text(
                   DateFormat.yMMMd().add_jm().format(todo.timeStamp),
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    removeTodoAtIndex(index);
+                  },
                 ),
               ),
             ),
